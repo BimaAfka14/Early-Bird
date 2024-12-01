@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:quranconnect/widgets/SurahPage.dart';
 
 import '../widgets/daily_ayah_card.dart';
 import '../widgets/quick_access_buttons.dart';
-import '../widgets/juz_list_view.dart';
+import '../widgets/JuzPage.dart';
 
 class Dashboard extends StatefulWidget {
   @override
@@ -93,10 +94,11 @@ class _DashboardState extends State<Dashboard> {
                 ),
                 SizedBox(height: 10),
                 QuickAccessButtons(
-                  onReadQuran: () {
-                    print("Navigasi ke halaman baca Quran");
-                    // Tambahkan navigasi ke halaman Quran
+                  onQuran: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => SurahPage()));
                   },
+                  // Tambahkan navigasi ke halaman Quran
                   onHistory: () {
                     print("Navigasi ke halaman riwayat");
                     // Tambahkan navigasi ke halaman riwayat
@@ -106,12 +108,6 @@ class _DashboardState extends State<Dashboard> {
                     // Tambahkan navigasi ke halaman favorit
                   },
                 ),
-                SizedBox(height: 20),
-                Text(
-                  "Pilih Juz",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                JuzListView(),
               ],
             ),
           ),
