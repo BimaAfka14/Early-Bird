@@ -46,21 +46,45 @@ class _SurahPageState extends State<SurahPage> {
               itemCount: surahList.length,
               itemBuilder: (context, index) {
                 final surah = surahList[index];
-                return ListTile(
-                  title: Text('${surah['englishName']} (${surah['name']})'),
-                  subtitle: Text('Jumlah Ayat: ${surah['numberOfAyahs']}'),
-                  trailing: Text(surah['revelationType']),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Opsi(
-                          number: surah['number'], // Pass juzNumber
-                          type: 'surah', // Specify the type as 'juz'
-                        ),
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8), // Card margin
+                  elevation: 4, // Card shadow
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10), // Rounded corners
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16), // Padding in card
+                    title: Text(
+                      '${surah['englishName']} (${surah['name']})',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
+                    ),
+                    subtitle: Text(
+                      'Jumlah Ayat: ${surah['numberOfAyahs']}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    trailing: Text(
+                      surah['revelationType'],
+                      style: const TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Opsi(
+                            number: surah['number'], // Pass juzNumber
+                            type: 'surah', // Specify the type as 'juz'
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
             ),

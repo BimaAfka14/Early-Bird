@@ -94,6 +94,13 @@ class _JuzTerjemahState extends State<JuzTerjemah> {
                   );
                 }
 
+                // Pastikan indeks dalam range saat mengakses ayahs
+                final ayahIndex = index - 1; // Hitung indeks sebenarnya
+                if (ayahIndex < 0 || ayahIndex >= ayahs.length) {
+                  return const SizedBox
+                      .shrink(); // Hindari error dengan widget kosong
+                }
+
                 // Tampilkan ayat mulai dari indeks yang benar
                 final ayah = ayahs[index - 1];
 

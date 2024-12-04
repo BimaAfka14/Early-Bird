@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:quranconnect/screens/dashboard.dart';
+import 'package:provider/provider.dart'; // Import Provider
+import './screens/dashboard.dart';
+import './widgets/favorite_provider.dart'; // Import FavoriteProvider
 
 void main() {
   runApp(QuranConnectApp());
@@ -11,10 +10,15 @@ void main() {
 class QuranConnectApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.green),
-      home: Dashboard(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FavoriteProvider()), // Daftarkan Provider
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(primarySwatch: Colors.green),
+        home: Dashboard(),
+      ),
     );
   }
 }

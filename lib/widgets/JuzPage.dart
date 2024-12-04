@@ -8,14 +8,23 @@ class JuzPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Pilih Juz"),
+        title: const Text("Pilih Juz"),
         centerTitle: true,
+        backgroundColor: Colors.teal,
       ),
       body: SafeArea(
-        // Menggunakan SafeArea untuk menghindari overflow dan area terpotong
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: JuzListView(), // Menyematkan JuzListView dengan padding
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.teal, Colors.greenAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: JuzListView(),
+          ),
         ),
       ),
     );
@@ -32,22 +41,37 @@ class JuzListView extends StatelessWidget {
       itemBuilder: (context, index) {
         int juzNumber = index + 1; // Menampilkan Juz 1 hingga Juz 30
         return Card(
-          elevation: 4, // Memberikan bayangan pada card
-          margin: const EdgeInsets.symmetric(
-              vertical: 8.0), // Memberikan jarak vertikal antar card
+          elevation: 6, // Memberikan bayangan pada card
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // Sudut tumpul pada card
+            borderRadius: BorderRadius.circular(15), // Sudut tumpul pada card
           ),
           child: ListTile(
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+            leading: CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.tealAccent,
+              child: Text(
+                "$juzNumber",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal,
+                ),
+              ),
+            ),
             title: Text(
               "Juz $juzNumber",
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
+            ),
+            trailing: const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.teal,
             ),
             onTap: () {
               // Navigasi ke halaman Opsi berdasarkan Juz yang dipilih
@@ -55,8 +79,8 @@ class JuzListView extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => Opsi(
-                    number: juzNumber, // Pass juzNumber
-                    type: 'juz', // Tipe 'juz' yang dikirimkan
+                    number: juzNumber,
+                    type: 'juz',
                   ),
                 ),
               );

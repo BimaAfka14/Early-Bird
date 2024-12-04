@@ -11,6 +11,10 @@ dependencies:
     sdk: flutter
   flutter_islamic_icons: ^1.0.2
   http: any
+  provider: any
+  shared_preferences: any
+  sqflite: any
+  path: any
 
 dev_dependencies:
   flutter_test:

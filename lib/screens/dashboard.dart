@@ -7,6 +7,7 @@ import 'package:quranconnect/widgets/SurahPage.dart';
 import '../widgets/daily_ayah_card.dart';
 import '../widgets/quick_access_buttons.dart';
 import '../widgets/JuzPage.dart';
+import '../widgets/SearchPage.dart'; // Import halaman pencarian
 
 class Dashboard extends StatefulWidget {
   @override
@@ -88,9 +89,11 @@ class _DashboardState extends State<Dashboard> {
                   isLoading: _isLoading,
                 ),
                 SizedBox(height: 20),
-                Text(
-                  "Akses Cepat",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Center(
+                  child: Text(
+                    "Menu Utama",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 SizedBox(height: 10),
                 QuickAccessButtons(
@@ -98,15 +101,30 @@ class _DashboardState extends State<Dashboard> {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) => SurahPage()));
                   },
-                  // Tambahkan navigasi ke halaman Quran
                   onHistory: () {
                     print("Navigasi ke halaman riwayat");
-                    // Tambahkan navigasi ke halaman riwayat
                   },
                   onFavorites: () {
                     print("Navigasi ke halaman favorit");
-                    // Tambahkan navigasi ke halaman favorit
                   },
+                ),
+                SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SearchPage()),
+                      );
+                    },
+                    icon: Icon(Icons.search),
+                    label: Text("Cari Ayat"),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.teal, // Background color
+                      onPrimary: Colors.white, // Text color
+                      textStyle: TextStyle(fontSize: 16),
+                    ),
+                  ),
                 ),
               ],
             ),

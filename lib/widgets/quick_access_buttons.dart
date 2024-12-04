@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quranconnect/widgets/SurahPage.dart';
 import '../widgets/JuzPage.dart';
+import '../screens/favorite_page.dart';
 
 class QuickAccessButtons extends StatelessWidget {
   final VoidCallback onQuran;
@@ -47,7 +48,10 @@ class QuickAccessButtons extends StatelessWidget {
         _buildQuickActionCard(
           icon: Icons.favorite,
           label: "Favorit",
-          onTap: onFavorites,
+          onTap: (() {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => FavoritesPage()));
+          }),
         ),
       ],
     );
