@@ -20,6 +20,7 @@ class _DashboardState extends State<Dashboard> {
   String? _surahName;
   int? _ayahNumber;
   bool _isLoading = true;
+  TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -73,6 +74,7 @@ class _DashboardState extends State<Dashboard> {
       appBar: AppBar(
         title: Text("QuranConnect"),
         centerTitle: true,
+        backgroundColor: Colors.teal,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -81,6 +83,46 @@ class _DashboardState extends State<Dashboard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Cari Ayat as a search bar with functionality
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (text) {
+                      setState(() {}); // Rebuild to show/hide the search icon
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Cari Ayat...',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      // Show search icon on the right if there's text
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.search, color: Colors.teal),
+                              onPressed: () {
+                                // Navigate to SearchPage with the search keyword
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SearchPage(
+                                        query: _searchController.text),
+                                  ),
+                                );
+                              },
+                            )
+                          : null,
+                      border: InputBorder.none,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                    height:
+                        20), // Space between the search bar and DailyAyahCard
                 DailyAyahCard(
                   surahName: _surahName,
                   ayahNumber: _ayahNumber,
@@ -92,7 +134,11 @@ class _DashboardState extends State<Dashboard> {
                 Center(
                   child: Text(
                     "Menu Utama",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
+                    ),
                   ),
                 ),
                 SizedBox(height: 10),
@@ -107,24 +153,6 @@ class _DashboardState extends State<Dashboard> {
                   onFavorites: () {
                     print("Navigasi ke halaman favorit");
                   },
-                ),
-                SizedBox(height: 20),
-                Center(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SearchPage()),
-                      );
-                    },
-                    icon: Icon(Icons.search),
-                    label: Text("Cari Ayat"),
-                    style: ElevatedButton.styleFrom(
-                      primary: Colors.teal, // Background color
-                      onPrimary: Colors.white, // Text color
-                      textStyle: TextStyle(fontSize: 16),
-                    ),
-                  ),
                 ),
               ],
             ),

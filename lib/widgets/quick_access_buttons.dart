@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quranconnect/widgets/SurahPage.dart';
 import '../widgets/JuzPage.dart';
-import '../screens/favorite_page.dart';
+import '../screens/Favorite_Pages.dart';
 
 class QuickAccessButtons extends StatelessWidget {
   final VoidCallback onQuran;
@@ -36,8 +36,8 @@ class QuickAccessButtons extends StatelessWidget {
           icon: Icons.book,
           label: "Baca Juz",
           onTap: (() {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => JuzPage()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => JuzPage()));
           }),
         ),
         _buildQuickActionCard(
@@ -50,7 +50,7 @@ class QuickAccessButtons extends StatelessWidget {
           label: "Favorit",
           onTap: (() {
             Navigator.push(context,
-                MaterialPageRoute(builder: (context) => FavoritesPage()));
+                MaterialPageRoute(builder: (context) => FavoritePages()));
           }),
         ),
       ],
@@ -73,7 +73,8 @@ class QuickAccessButtons extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // Menyusun ikon dan teks di tengah
+            mainAxisAlignment:
+                MainAxisAlignment.center, // Menyusun ikon dan teks di tengah
             children: [
               CircleAvatar(
                 radius: 30,

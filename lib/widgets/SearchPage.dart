@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class SearchPage extends StatefulWidget {
+  final String query;
+
+  SearchPage({required this.query});
+
   @override
   _SearchPageState createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
-  final TextEditingController _keywordController = TextEditingController();
   List<dynamic> _searchResults = [];
   bool _isLoading = false;
   bool _hasSearched = false;
@@ -88,6 +91,12 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    searchAyah(widget.query); // Start the search immediately with the passed query
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -99,22 +108,6 @@ class _SearchPageState extends State<SearchPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _keywordController,
-              decoration: InputDecoration(
-                labelText: 'Masukkan kata kunci',
-                border: OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () {
-                    if (_keywordController.text.isNotEmpty) {
-                      searchAyah(_keywordController.text.trim());
-                    }
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(height: 16.0),
             if (_isLoading)
               const Center(child: CircularProgressIndicator())
             else if (_hasSearched && _searchResults.isEmpty)
@@ -132,9 +125,8 @@ class _SearchPageState extends State<SearchPage> {
                     final match = _searchResults[index];
                     final arabicAyahKey =
                         '${match['surah']['number']}-${match['numberInSurah']}';
-                    final arabicAyah = arabicAyahs[arabicAyahKey] ??
-                        ''; // Retrieve Arabic text
-                    final translationText = match['text']; // Translation text
+                    final arabicAyah = arabicAyahs[arabicAyahKey] ?? '';
+                    final translationText = match['text'];
 
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -155,8 +147,7 @@ class _SearchPageState extends State<SearchPage> {
                                   ? arabicAyah // Display Arabic Ayah text
                                   : 'Arabic text not found',
                               style: const TextStyle(fontSize: 18),
-                              textDirection: TextDirection
-                                  .rtl, // Set text direction for Arabic
+                              textDirection: TextDirection.rtl,
                             ),
                             SizedBox(height: 4),
                             Text(

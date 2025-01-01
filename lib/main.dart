@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // Import Provider
 import './screens/dashboard.dart';
-import './widgets/favorite_provider.dart'; // Import FavoriteProvider
+import './widgets/Favorite_Provider.dart'; // Import FavoriteProvider
 
 void main() {
   runApp(QuranConnectApp());
@@ -12,7 +12,8 @@ class QuranConnectApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => FavoriteProvider()), // Daftarkan Provider
+        ChangeNotifierProvider(
+            create: (_) => FavoriteProvider()), // Daftarkan Provider
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

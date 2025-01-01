@@ -45,46 +45,52 @@ class _SurahArabicState extends State<SurahArabic> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: ayahs.length +
-                  (widget.surahNumber != 1
-                      ? 1
-                      : 0), // Menambahkan 1 hanya jika bukan surah 1
-              itemBuilder: (context, index) {
-                if (index == 0 && widget.surahNumber != 1) {
-                  // Menampilkan Basmalah hanya jika Surah bukan 1
-                  return ListTile(
-                    title: Text(
-                      'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', // Menampilkan Basmalah
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+          : Padding(
+              padding: const EdgeInsets.all(10.0), // Margin di semua sisi
+              child: ListView.builder(
+                itemCount: ayahs.length +
+                    (widget.surahNumber != 1
+                        ? 1
+                        : 0), // Menambahkan 1 hanya jika bukan surah 1
+                itemBuilder: (context, index) {
+                  if (index == 0 && widget.surahNumber != 1) {
+                    // Menampilkan Basmalah hanya jika Surah bukan 1
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: Text(
+                        'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', // Menampilkan Basmalah
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  }
+
+                  // Mengakses ayat yang benar (untuk surah selain 1, index - 1)
+                  final ayah =
+                      ayahs[widget.surahNumber != 1 ? index - 1 : index];
+
+                  // Menampilkan teks ayat, hapus Basmalah untuk ayat pertama selain Surah 1
+                  String ayahText = ayah['text'] ?? '';
+                  if (widget.surahNumber != 1 &&
+                      ayahText.startsWith(
+                          'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ')) {
+                    ayahText = ayahText
+                        .replaceFirst(
+                            'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '')
+                        .trim();
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                    child: Text(
+                      ayahText,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(fontSize: 18),
                     ),
                   );
-                }
-
-                // Mengakses ayat yang benar (untuk surah selain 1, index - 1)
-                final ayah = ayahs[widget.surahNumber != 1 ? index - 1 : index];
-
-                // Menampilkan teks ayat, hapus Basmalah untuk ayat pertama selain Surah 1
-                String ayahText = ayah['text'] ?? '';
-                if (widget.surahNumber != 1 &&
-                    ayahText
-                        .startsWith('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ')) {
-                  ayahText = ayahText
-                      .replaceFirst(
-                          'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '')
-                      .trim();
-                }
-
-                return ListTile(
-                  title: Text(
-                    ayahText,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                );
-              },
+                },
+              ),
             ),
     );
   }

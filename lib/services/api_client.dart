@@ -71,6 +71,9 @@ class ApiClient {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      if (data['data'] == null) {
+        throw Exception('Invalid response: Missing data field.');
+      }
       return data['data']; // Mengembalikan data surah
     } else {
       throw Exception('Failed to fetch surah details');
@@ -83,18 +86,36 @@ class ApiClient {
     try {
       // Ambil teks Arab
       final arabicResponse = await fetchSurahDetails(surahNumber, 'ar.asad');
-      final arabicAyahs = arabicResponse['ayahs'];
+      final arabicAyahs = (arabicResponse['ayahs'] as List<dynamic>)
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
 
       // Ambil terjemahan
       final translationResponse =
           await fetchSurahDetails(surahNumber, 'id.indonesian');
-      final translationAyahs = translationResponse['ayahs'];
+      final translationAyahs = (translationResponse['ayahs'] as List<dynamic>)
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+
+      // Validasi panjang list
+      if (arabicAyahs.length != translationAyahs.length) {
+        throw Exception('Mismatch in Arabic and translation ayahs count.');
+      }
 
       // Gabungkan data
       List<Map<String, String>> combinedAyahs = [];
       for (int i = 0; i < arabicAyahs.length; i++) {
+        String arabicText = arabicAyahs[i]['text'] ?? '';
+
+        // Hapus "Bismillah" pada ayat pertama
+        if (surahNumber != 1 && surahNumber != 9 && i == 0) {
+          final bismillahPattern =
+              RegExp(r'^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*');
+          arabicText = arabicText.replaceFirst(bismillahPattern, '').trim();
+        }
+
         combinedAyahs.add({
-          'arabic': arabicAyahs[i]['text'] ?? '',
+          'arabic': arabicText,
           'translation': translationAyahs[i]['text'] ?? '',
           'number': arabicAyahs[i]['numberInSurah'].toString(),
         });
@@ -106,7 +127,7 @@ class ApiClient {
     }
   }
 
-  // Fungsi untuk mengambil terjemahan Juz
+  /// Mendapatkan terjemahan Juz
   Future<dynamic> getJuzTranslation(int juzNumber) async {
     final url = '$baseUrl/juz/$juzNumber/id.indonesian';
     return await _getRequest(url);
