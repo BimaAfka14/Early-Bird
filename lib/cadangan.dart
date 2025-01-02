@@ -1,93 +1,122 @@
 import 'package:flutter/material.dart';
-import 'package:quranconnect/screens/opsi.dart'; // Pastikan path sesuai
+import '../services/api_client.dart';
 
-class JuzPage extends StatelessWidget {
-  const JuzPage({Key? key}) : super(key: key);
+class JuzTerjemah extends StatefulWidget {
+  final int juzNumber;
+
+  const JuzTerjemah({Key? key, required this.juzNumber}) : super(key: key);
+
+  @override
+  _JuzTerjemahState createState() => _JuzTerjemahState();
+}
+
+class _JuzTerjemahState extends State<JuzTerjemah> {
+  final ApiClient _apiClient = ApiClient();
+  List<Map<String, String>> ayahs = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchJuzDataWithTranslation();
+  }
+
+  Future<void> fetchJuzDataWithTranslation() async {
+    try {
+      // Memanggil endpoint untuk mendapatkan teks Arab dari Juz tertentu
+      final arabicData = await ApiClient.getJuz(widget.juzNumber);
+      final arabicAyahs = arabicData['data']['ayahs'];
+
+      // Memanggil endpoint untuk mendapatkan terjemahan Juz tertentu
+      final translationData =
+          await _apiClient.getJuzTranslation(widget.juzNumber);
+      final translationAyahs = translationData['data']['ayahs'];
+
+      // Menggabungkan teks Arab dan terjemahan untuk setiap ayat
+      List<Map<String, String>> combinedAyahs = List<Map<String, String>>.from(
+        arabicAyahs.asMap().map((index, ayah) {
+          final translatedAyah = translationAyahs[index];
+          String arabicText = (ayah['text'] ?? '').toString();
+          String translationText =
+              (translatedAyah['text'] ?? 'Terjemahan tidak tersedia')
+                  .toString();
+
+          // Pisahkan Basmalah jika ayat pertama dan bukan Surah 1
+          if (index == 0 && ayah['surah']['number'] != 1) {
+            arabicText = arabicText
+                .replaceFirst('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '')
+                .trim();
+          }
+
+          return MapEntry(index, {
+            'arabic': arabicText,
+            'translation': translationText,
+          });
+        }).values,
+      );
+
+      setState(() {
+        ayahs = combinedAyahs;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pilih Juz"),
-        centerTitle: true,
-        backgroundColor: Colors.teal,
+        title: Text(
+            'Juz ${widget.juzNumber} - Dengan Terjemahan'), // Menampilkan judul
       ),
-      body: SafeArea(
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.teal, Colors.greenAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: JuzListView(),
-          ),
-        ),
-      ),
-    );
-  }
-}
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: ayahs.length + 1, // Tambahkan 1 untuk Basmalah
+              itemBuilder: (context, index) {
+                // Menampilkan Basmalah jika bukan Surah 1
+                if (index == 0 &&
+                    ayahs.isNotEmpty &&
+                    ayahs.first['arabic']!
+                        .contains('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ')) {
+                  return ListTile(
+                    title: Text(
+                      'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', // Basmalah
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  );
+                }
 
-class JuzListView extends StatelessWidget {
-  const JuzListView({Key? key}) : super(key: key);
+                // Pastikan indeks dalam range saat mengakses ayahs
+                final ayahIndex = index - 1; // Hitung indeks sebenarnya
+                if (ayahIndex < 0 || ayahIndex >= ayahs.length) {
+                  return const SizedBox
+                      .shrink(); // Hindari error dengan widget kosong
+                }
 
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: 30, // Menampilkan 30 Juz
-      itemBuilder: (context, index) {
-        int juzNumber = index + 1; // Menampilkan Juz 1 hingga Juz 30
-        return Card(
-          elevation: 6, // Memberikan bayangan pada card
-          margin: const EdgeInsets.symmetric(vertical: 8.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15), // Sudut tumpul pada card
-          ),
-          child: ListTile(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-            leading: CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.tealAccent,
-              child: Text(
-                "$juzNumber",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.teal,
-                ),
-              ),
-            ),
-            title: Text(
-              "Juz $juzNumber",
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.teal,
-            ),
-            onTap: () {
-              // Navigasi ke halaman Opsi berdasarkan Juz yang dipilih
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Opsi(
-                    number: juzNumber,
-                    type: 'juz',
+                // Tampilkan ayat mulai dari indeks yang benar
+                final ayah = ayahs[index - 1];
+
+                return ListTile(
+                  title: Text(
+                    ayah['arabic'] ?? '', // Teks Arab
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(fontSize: 18),
                   ),
-                ),
-              );
-            },
-          ),
-        );
-      },
+                  subtitle: Text(
+                    ayah['translation'] ?? '', // Terjemahan
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                );
+              },
+            ),
     );
   }
 }

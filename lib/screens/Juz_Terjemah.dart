@@ -1,3 +1,4 @@
+//lib\screens\Juz_Terjemah.dart
 import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 
@@ -33,27 +34,38 @@ class _JuzTerjemahState extends State<JuzTerjemah> {
       final translationAyahs = translationData['data']['ayahs'];
 
       // Menggabungkan teks Arab dan terjemahan untuk setiap ayat
-      List<Map<String, String>> combinedAyahs = List<Map<String, String>>.from(
-        arabicAyahs.asMap().map((index, ayah) {
-          final translatedAyah = translationAyahs[index];
-          String arabicText = (ayah['text'] ?? '').toString();
-          String translationText =
-              (translatedAyah['text'] ?? 'Terjemahan tidak tersedia')
-                  .toString();
+      List<Map<String, String>> combinedAyahs = [];
+      String? bismillahSeparator;
 
-          // Pisahkan Basmalah jika ayat pertama dan bukan Surah 1
-          if (index == 0 && ayah['surah']['number'] != 1) {
-            arabicText = arabicText
-                .replaceFirst('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', '')
-                .trim();
+      for (int i = 0; i < arabicAyahs.length; i++) {
+        String arabicText = arabicAyahs[i]['text'] ?? '';
+        String translationText = translationAyahs[i]['text'] ?? '';
+        int surahNumber = arabicAyahs[i]['surah']['number'];
+        String ayahNumber = arabicAyahs[i]['numberInSurah'].toString();
+
+        // Deteksi basmalah dan pindahkan ke separator jika ayat pertama dalam surah
+        if (i == 0 || arabicAyahs[i]['numberInSurah'] == 1) {
+          if (surahNumber != 1 && surahNumber != 9) {
+            final bismillahPattern =
+                RegExp(r'^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*');
+            if (bismillahPattern.hasMatch(arabicText)) {
+              bismillahSeparator = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+              arabicText = arabicText.replaceFirst(bismillahPattern, '').trim();
+            }
           }
+        }
 
-          return MapEntry(index, {
-            'arabic': arabicText,
-            'translation': translationText,
-          });
-        }).values,
-      );
+        combinedAyahs.add({
+          'arabic': arabicText,
+          'translation': translationText,
+          'number': ayahNumber,
+          'surah': surahNumber.toString(),
+          'separator': bismillahSeparator ?? '', // Tambahkan separator jika ada
+        });
+
+        // Hapus separator setelah digunakan
+        bismillahSeparator = null;
+      }
 
       setState(() {
         ayahs = combinedAyahs;
@@ -77,43 +89,92 @@ class _JuzTerjemahState extends State<JuzTerjemah> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
-              itemCount: ayahs.length + 1, // Tambahkan 1 untuk Basmalah
+              itemCount: ayahs.length,
               itemBuilder: (context, index) {
-                // Menampilkan Basmalah jika bukan Surah 1
-                if (index == 0 &&
-                    ayahs.isNotEmpty &&
-                    ayahs.first['arabic']!
-                        .contains('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ')) {
-                  return ListTile(
-                    title: Text(
-                      'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', // Basmalah
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
+                final ayah = ayahs[index];
+
+                // Tampilkan basmalah sebagai tanda perpindahan surah
+                if (ayah['separator']?.isNotEmpty ?? false) {
+                  return Column(
+                    children: [
+                      Text(
+                        ayah['separator']!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue),
+                      ),
+                      const SizedBox(
+                          height: 10), // Spasi antara basmalah dan pembatas
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Ayat ${ayah['number']}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ),
+                      const Divider(
+                          height: 20,
+                          thickness: 1,
+                          color: Colors.grey), // Pembatas atas
+                      ListTile(
+                        title: Text(
+                          ayah['arabic'] ?? '',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        subtitle: Text(
+                          ayah['translation'] ?? '',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      const Divider(
+                          height: 20,
+                          thickness: 1,
+                          color: Colors.grey), // Pembatas bawah
+                    ],
                   );
                 }
 
-                // Pastikan indeks dalam range saat mengakses ayahs
-                final ayahIndex = index - 1; // Hitung indeks sebenarnya
-                if (ayahIndex < 0 || ayahIndex >= ayahs.length) {
-                  return const SizedBox
-                      .shrink(); // Hindari error dengan widget kosong
-                }
-
-                // Tampilkan ayat mulai dari indeks yang benar
-                final ayah = ayahs[index - 1];
-
-                return ListTile(
-                  title: Text(
-                    ayah['arabic'] ?? '', // Teks Arab
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  subtitle: Text(
-                    ayah['translation'] ?? '', // Terjemahan
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                // Tampilkan ayat tanpa separator
+                return Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Ayat ${ayah['number']}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+                    const Divider(
+                        height: 20,
+                        thickness: 1,
+                        color: Colors.grey), // Pembatas atas
+                    ListTile(
+                      title: Text(
+                        ayah['arabic'] ?? '',
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                      subtitle: Text(
+                        ayah['translation'] ?? '',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    const Divider(
+                        height: 20,
+                        thickness: 1,
+                        color: Colors.grey), // Pembatas bawah
+                  ],
                 );
               },
             ),

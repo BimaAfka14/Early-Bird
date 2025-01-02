@@ -1,3 +1,4 @@
+//lib\screens\Favorite_Pages.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/favorite_provider.dart'; // Path ke FavoriteProvider

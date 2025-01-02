@@ -1,3 +1,4 @@
+//lib\widgets\SurahPage.dart
 import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 import '../screens/Surah_Arabic.dart';

@@ -1,3 +1,4 @@
+//lib\widgets\daily_ayah_card.dart
 import 'package:flutter/material.dart';
 
 class DailyAyahCard extends StatelessWidget {

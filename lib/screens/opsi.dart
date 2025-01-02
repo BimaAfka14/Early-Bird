@@ -1,3 +1,4 @@
+//lib\screens\opsi.dart
 import 'package:flutter/material.dart';
 import '../widgets/JuzPage.dart';
 import '../screens/Surah_Arabic.dart';

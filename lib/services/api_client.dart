@@ -1,3 +1,4 @@
+//lib\services\api_client.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -104,21 +105,36 @@ class ApiClient {
 
       // Gabungkan data
       List<Map<String, String>> combinedAyahs = [];
+      String? bismillahSeparator;
+
+// Loop untuk memproses setiap ayat
       for (int i = 0; i < arabicAyahs.length; i++) {
         String arabicText = arabicAyahs[i]['text'] ?? '';
+        String translationText = translationAyahs[i]['text'] ?? '';
+        int surahNumber = arabicAyahs[i]['surah']['number'];
 
-        // Hapus "Bismillah" pada ayat pertama
-        if (surahNumber != 1 && surahNumber != 9 && i == 0) {
-          final bismillahPattern =
-              RegExp(r'^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*');
-          arabicText = arabicText.replaceFirst(bismillahPattern, '').trim();
+        // Deteksi basmalah dan pindahkan ke separator
+        if (i == 0 || arabicAyahs[i]['numberInSurah'] == 1) {
+          if (surahNumber != 1 && surahNumber != 9) {
+            final bismillahPattern =
+                RegExp(r'^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*');
+            if (bismillahPattern.hasMatch(arabicText)) {
+              bismillahSeparator = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
+              arabicText = arabicText.replaceFirst(bismillahPattern, '').trim();
+            }
+          }
         }
 
         combinedAyahs.add({
           'arabic': arabicText,
-          'translation': translationAyahs[i]['text'] ?? '',
+          'translation': translationText,
           'number': arabicAyahs[i]['numberInSurah'].toString(),
+          'surah': surahNumber.toString(),
+          'separator': bismillahSeparator ?? '', // Tambahkan separator
         });
+
+        // Hapus separator setelah digunakan
+        bismillahSeparator = null;
       }
 
       return combinedAyahs;

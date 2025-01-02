@@ -1,3 +1,4 @@
+//lib\screens\Surah_Arabic.dart
 import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 
@@ -41,38 +42,45 @@ class _SurahArabicState extends State<SurahArabic> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Surah ${widget.surahNumber} - Arabic Saja'),
+        title: Text('Surah ${widget.surahNumber} - Arabic'),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-              padding: const EdgeInsets.all(10.0), // Margin di semua sisi
+              padding: const EdgeInsets.all(10.0),
               child: ListView.builder(
                 itemCount: ayahs.length +
-                    (widget.surahNumber != 1
+                    (widget.surahNumber != 1 && widget.surahNumber != 9
                         ? 1
-                        : 0), // Menambahkan 1 hanya jika bukan surah 1
+                        : 0), // No Basmalah for Surah 1 and 9
                 itemBuilder: (context, index) {
-                  if (index == 0 && widget.surahNumber != 1) {
-                    // Menampilkan Basmalah hanya jika Surah bukan 1
+                  if (index == 0 &&
+                      widget.surahNumber != 1 &&
+                      widget.surahNumber != 9) {
+                    // Displaying Basmalah if Surah is not 1 and 9
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10.0),
                       child: Text(
-                        'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ', // Menampilkan Basmalah
+                        'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     );
                   }
 
-                  // Mengakses ayat yang benar (untuk surah selain 1, index - 1)
-                  final ayah =
-                      ayahs[widget.surahNumber != 1 ? index - 1 : index];
+                  // Access the correct Ayah (adjust index for Surah > 1)
+                  final ayah = ayahs[
+                      widget.surahNumber != 1 && widget.surahNumber != 9
+                          ? index - 1
+                          : index];
 
-                  // Menampilkan teks ayat, hapus Basmalah untuk ayat pertama selain Surah 1
+                  // Remove Basmalah from Ayah text if it starts with it
                   String ayahText = ayah['text'] ?? '';
                   if (widget.surahNumber != 1 &&
+                      widget.surahNumber != 9 &&
                       ayahText.startsWith(
                           'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ')) {
                     ayahText = ayahText
@@ -81,13 +89,54 @@ class _SurahArabicState extends State<SurahArabic> {
                         .trim();
                   }
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5.0),
-                    child: Text(
-                      ayahText,
-                      textAlign: TextAlign.right,
-                      style: const TextStyle(fontSize: 18),
-                    ),
+                  // Get the Ayah number
+                  final ayahNumber =
+                      widget.surahNumber != 1 && widget.surahNumber != 9
+                          ? index
+                          : index + 1;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Display Ayah number
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: Text(
+                          'Ayah $ayahNumber',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      // Divider between verses
+                      Divider(
+                        color: Colors.grey.shade300,
+                        thickness: 1,
+                        height: 20,
+                      ),
+                      // Arabic Ayah text with right alignment
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                ayahText,
+                                textAlign: TextAlign.right,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  height:
+                                      1.5, // Adjust line height for readability
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),

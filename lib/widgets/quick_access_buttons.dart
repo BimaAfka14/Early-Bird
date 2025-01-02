@@ -1,3 +1,4 @@
+//lib\widgets\quick_access_buttons.dart
 import 'package:flutter/material.dart';
 import 'package:quranconnect/widgets/SurahPage.dart';
 import '../widgets/JuzPage.dart';
