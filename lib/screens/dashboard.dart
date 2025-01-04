@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:quranconnect/screens/Favorite_Page.dart';
 import 'package:quranconnect/widgets/SurahPage.dart';
 
 import '../widgets/daily_ayah_card.dart';
 import '../widgets/quick_access_buttons.dart';
 import '../widgets/JuzPage.dart';
 import '../widgets/SearchPage.dart'; // Import halaman pencarian
+import '../screens/HistoryPage.dart'; // Import halaman riwayat
 
 class Dashboard extends StatefulWidget {
   @override
@@ -149,10 +151,12 @@ class _DashboardState extends State<Dashboard> {
                         MaterialPageRoute(builder: (context) => SurahPage()));
                   },
                   onHistory: () {
-                    print("Navigasi ke halaman riwayat");
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => HistoryPage()));
                   },
                   onFavorites: () {
-                    print("Navigasi ke halaman favorit");
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => FavoritePage()));
                   },
                 ),
               ],

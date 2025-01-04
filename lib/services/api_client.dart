@@ -1,4 +1,3 @@
-//lib\services\api_client.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -87,16 +86,21 @@ class ApiClient {
     try {
       // Ambil teks Arab
       final arabicResponse = await fetchSurahDetails(surahNumber, 'ar.asad');
-      final arabicAyahs = (arabicResponse['ayahs'] as List<dynamic>)
-          .map((item) => Map<String, dynamic>.from(item))
+      final arabicAyahs = (arabicResponse['ayahs'] as List<dynamic>?)
+          ?.map((item) => Map<String, dynamic>.from(item))
           .toList();
 
       // Ambil terjemahan
       final translationResponse =
           await fetchSurahDetails(surahNumber, 'id.indonesian');
-      final translationAyahs = (translationResponse['ayahs'] as List<dynamic>)
-          .map((item) => Map<String, dynamic>.from(item))
+      final translationAyahs = (translationResponse['ayahs'] as List<dynamic>?)
+          ?.map((item) => Map<String, dynamic>.from(item))
           .toList();
+
+      // Validasi data
+      if (arabicAyahs == null || translationAyahs == null) {
+        throw Exception('Data ayahs null. Periksa respons API.');
+      }
 
       // Validasi panjang list
       if (arabicAyahs.length != translationAyahs.length) {
@@ -107,20 +111,37 @@ class ApiClient {
       List<Map<String, String>> combinedAyahs = [];
       String? bismillahSeparator;
 
-// Loop untuk memproses setiap ayat
       for (int i = 0; i < arabicAyahs.length; i++) {
-        String arabicText = arabicAyahs[i]['text'] ?? '';
-        String translationText = translationAyahs[i]['text'] ?? '';
-        int surahNumber = arabicAyahs[i]['surah']['number'];
+        final arabicAyah = arabicAyahs[i];
+        final translationAyah = translationAyahs[i];
 
-        // Deteksi basmalah dan pindahkan ke separator
-        if (i == 0 || arabicAyahs[i]['numberInSurah'] == 1) {
+        final arabicText = arabicAyah['text'] ?? '';
+        final translationText = translationAyah['text'] ?? '';
+        final numberInSurah = arabicAyah['numberInSurah'];
+        final surahNumber = arabicAyah['surah']?['number'];
+
+        // Debugging: Cek nilai numberInSurah dan surah
+        print(
+            'Arabic Ayah $i: numberInSurah = $numberInSurah, surahNumber = $surahNumber');
+
+        // Pengecekan apakah numberInSurah dan surah ada di kedua ayat
+        if (numberInSurah == null || surahNumber == null) {
+          throw Exception(
+              'Invalid data format: Missing numberInSurah or surah in Arabic.');
+        }
+        if (translationAyah['numberInSurah'] == null ||
+            translationAyah['surah']?['number'] == null) {
+          throw Exception(
+              'Invalid data format: Missing numberInSurah or surah in translation.');
+        }
+
+        // Deteksi basmalah
+        if (i == 0 || numberInSurah == 1) {
           if (surahNumber != 1 && surahNumber != 9) {
             final bismillahPattern =
                 RegExp(r'^بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\s*');
             if (bismillahPattern.hasMatch(arabicText)) {
               bismillahSeparator = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
-              arabicText = arabicText.replaceFirst(bismillahPattern, '').trim();
             }
           }
         }
@@ -128,13 +149,12 @@ class ApiClient {
         combinedAyahs.add({
           'arabic': arabicText,
           'translation': translationText,
-          'number': arabicAyahs[i]['numberInSurah'].toString(),
+          'number': numberInSurah.toString(),
           'surah': surahNumber.toString(),
-          'separator': bismillahSeparator ?? '', // Tambahkan separator
+          'separator': bismillahSeparator ?? '',
         });
 
-        // Hapus separator setelah digunakan
-        bismillahSeparator = null;
+        bismillahSeparator = null; // Hapus setelah digunakan
       }
 
       return combinedAyahs;
@@ -147,5 +167,26 @@ class ApiClient {
   Future<dynamic> getJuzTranslation(int juzNumber) async {
     final url = '$baseUrl/juz/$juzNumber/id.indonesian';
     return await _getRequest(url);
+  }
+
+  /// Mendapatkan detail surah tertentu
+  Future<Map<String, dynamic>> getSurah(int surahNumber) async {
+    final url = '$baseUrl/surah/$surahNumber';
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['data'] == null) {
+          throw Exception('Invalid response: Missing data field.');
+        }
+        return data['data']; // Mengembalikan detail surah
+      } else {
+        throw Exception(
+            'Failed to fetch surah details. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching surah: $e');
+    }
   }
 }
