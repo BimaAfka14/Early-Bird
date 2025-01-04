@@ -23,10 +23,10 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 2, // Update versi database untuk migrasi
+      version: 3, // Update versi database untuk migrasi
       onCreate: (db, version) async {
         print('Membuat tabel reading_history');
-        await db.execute('''
+        await db.execute(''' 
           CREATE TABLE reading_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             surah INTEGER,
@@ -35,22 +35,33 @@ class DatabaseHelper {
         ''');
 
         print('Membuat tabel favorites');
-        await db.execute('''
+        await db.execute(''' 
           CREATE TABLE favorites (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             surah INTEGER,
             ayah INTEGER
           )
         ''');
+
+        print('Membuat tabel users');
+        await db.execute('''
+          CREATE TABLE users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+          )
+        ''');
+
+        print('Tabel users dibuat');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          print('Migrasi database ke versi 2, menambahkan tabel favorites');
+        if (oldVersion < 3) {
+          print('Migrasi database ke versi 3, menambahkan tabel users');
           await db.execute('''
-            CREATE TABLE IF NOT EXISTS favorites (
+            CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
-              surah INTEGER,
-              ayah INTEGER
+              username TEXT NOT NULL UNIQUE,
+              password TEXT NOT NULL
             )
           ''');
         }
@@ -110,5 +121,39 @@ class DatabaseHelper {
       whereArgs: [surah, ayah],
     );
     return result.isNotEmpty;
+  }
+
+  // Users Table (Login and Register)
+  Future<int> registerUser(String username, String password) async {
+    final db = await database;
+    final user = await db.query(
+      'users',
+      where: 'username = ?',
+      whereArgs: [username],
+    );
+
+    if (user.isNotEmpty) {
+      throw Exception('Username already exists');
+    }
+
+    return await db.insert(
+      'users',
+      {'username': username, 'password': password},
+    );
+  }
+
+  Future<Map<String, dynamic>?> loginUser(
+      String username, String password) async {
+    final db = await database;
+    final user = await db.query(
+      'users',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
+
+    if (user.isNotEmpty) {
+      return user.first;
+    }
+    return null;
   }
 }

@@ -1,4 +1,3 @@
-// lib\screens\dashboard.dart
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
@@ -78,6 +77,18 @@ class _DashboardState extends State<Dashboard> {
         title: Text("QuranConnect"),
         centerTitle: true,
         backgroundColor: Colors.teal,
+        actions: [
+          // Ikon logout
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () {
+              // Lakukan proses logout
+              // Misalnya, hapus session atau reset login state, dan arahkan ke halaman login
+              Navigator.pushReplacementNamed(
+                  context, '/login'); // Navigasi ke halaman login
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -155,8 +166,10 @@ class _DashboardState extends State<Dashboard> {
                         MaterialPageRoute(builder: (context) => HistoryPage()));
                   },
                   onFavorites: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => FavoritePage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => FavoritePage()));
                   },
                 ),
               ],
