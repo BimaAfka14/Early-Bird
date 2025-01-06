@@ -10,6 +10,7 @@ import '../widgets/quick_access_buttons.dart';
 import '../widgets/JuzPage.dart';
 import '../widgets/SearchPage.dart'; // Import halaman pencarian
 import '../screens/HistoryPage.dart'; // Import halaman riwayat
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 
 class Dashboard extends StatefulWidget {
   @override
@@ -70,6 +71,18 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
+  // Fungsi logout dan reset session
+  Future<void> _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Menghapus data login dan login count
+    await prefs.remove('username');
+    await prefs.remove('loginCount');
+
+    // Navigasi ke halaman login
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,12 +94,7 @@ class _DashboardState extends State<Dashboard> {
           // Ikon logout
           IconButton(
             icon: Icon(Icons.logout),
-            onPressed: () {
-              // Lakukan proses logout
-              // Misalnya, hapus session atau reset login state, dan arahkan ke halaman login
-              Navigator.pushReplacementNamed(
-                  context, '/login'); // Navigasi ke halaman login
-            },
+            onPressed: _logout, // Panggil fungsi logout
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../services/database_helper.dart';
+import 'surah_page.dart';  // Import SurahPage
 
 class FavoritePage extends StatefulWidget {
   @override
@@ -20,7 +21,6 @@ class _FavoritePageState extends State<FavoritePage> {
 
   Future<void> loadFavorites() async {
     try {
-      // Ambil data dari database favorit
       final data = await DatabaseHelper().getFavorites();
       List<Map<String, dynamic>> detailedFavorites = [];
 
@@ -28,7 +28,6 @@ class _FavoritePageState extends State<FavoritePage> {
         final surahNumber = favorite['surah'];
         final ayahNumber = favorite['ayah'];
 
-        // Ambil detail dari API
         final arabicUrl =
             'https://api.alquran.cloud/v1/surah/$surahNumber/ar.alafasy';
         final translationUrl =
@@ -42,18 +41,17 @@ class _FavoritePageState extends State<FavoritePage> {
           final arabicData = json.decode(arabicResponse.body)['data'];
           final translationData = json.decode(translationResponse.body)['data'];
 
-          // Cari ayat yang sesuai
           final arabicAyah = arabicData['ayahs']
               .firstWhere((ayah) => ayah['numberInSurah'] == ayahNumber);
           final translationAyah = translationData['ayahs']
               .firstWhere((ayah) => ayah['numberInSurah'] == ayahNumber);
 
           detailedFavorites.add({
-            'surahName': arabicData['englishName'], // Nama surah
-            'arabic': arabicAyah['text'], // Teks Arab
-            'translation': translationAyah['text'], // Terjemahan
+            'surahName': arabicData['englishName'],
+            'arabic': arabicAyah['text'],
+            'translation': translationAyah['text'],
             'ayahNumber': ayahNumber,
-            'surah': surahNumber, // Simpan juga nomor surah
+            'surah': surahNumber,
           });
         }
       }
@@ -75,47 +73,87 @@ class _FavoritePageState extends State<FavoritePage> {
     return Scaffold(
       appBar: AppBar(title: Text('Favorite Ayahs')),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : favorites.isEmpty
-              ? Center(child: Text('No favorites yet.'))
+              ? const Center(child: Text('No favorites yet.'))
               : ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
                   itemCount: favorites.length,
                   itemBuilder: (context, index) {
                     final favorite = favorites[index];
-                    return ListTile(
-                      title: Text(
-                        '${favorite['surahName']} (Ayah ${favorite['ayahNumber']})',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            favorite['arabic'],
-                            style: TextStyle(fontSize: 23, fontFamily: 'Amiri'),
+                    return GestureDetector(
+                      onTap: () {
+                        // Navigasi ke SurahPage dengan mengirimkan surahNumber
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SurahPage(
+                              surahNumber: favorite['surah'],
+                            ),
                           ),
-                          SizedBox(height: 5),
-                          Text(
-                            favorite['translation'],
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ],
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () async {
-                          final surahNumber = favorite['surah'];
-                          final ayahNumber = favorite['ayahNumber'];
+                        );
+                      },
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        elevation: 4.0,
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${favorite['surahName']} (Ayah ${favorite['ayahNumber']})',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: Colors.blueAccent,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                favorite['arabic'],
+                                style: TextStyle(
+                                  fontSize: 23,
+                                  fontFamily: 'Amiri',
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.right,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                favorite['translation'],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[700],
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () async {
+                                    final surahNumber = favorite['surah'];
+                                    final ayahNumber = favorite['ayahNumber'];
 
-                          // Pastikan surahNumber valid
-                          if (surahNumber != null && ayahNumber != null) {
-                            await DatabaseHelper().removeFavorite(
-                              surahNumber, // Gunakan surahNumber langsung
-                              ayahNumber, // Gunakan ayahNumber langsung
-                            );
-                            loadFavorites(); // Reload favorites setelah dihapus
-                          }
-                        },
+                                    if (surahNumber != null && ayahNumber != null) {
+                                      await DatabaseHelper().removeFavorite(
+                                        surahNumber,
+                                        ayahNumber,
+                                      );
+
+                                      // Perbarui tampilan langsung setelah penghapusan
+                                      loadFavorites();
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },
